@@ -1,5 +1,5 @@
 {
-  "name": "Vue Crack",
+  "name": "Vue Bomb",
   "version": "1.3",
   "description": "检测网站是否使用Vue框架并分析路由结构",
   "manifest_version": 3,
@@ -16,7 +16,8 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "tabs"
+    "tabs",
+    "tabGroups"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -30,7 +31,7 @@
         "content.js"
       ],
       "run_at": "document_idle",
-      "all_frames": true
+      "all_frames": false
     }
   ],
   "web_accessible_resources": [
@@ -42,5 +43,8 @@
         "<all_urls>"
       ]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }

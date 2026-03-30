@@ -5,6 +5,7 @@ const pathListContainer = document.getElementById("pathListContainer");
 
 // 全局变量存储路由分析结果
 let vueAnalysisResult = null;
+let eventListenersBound = false;
 
 // URL清理函数
 function cleanUrl(url) {
@@ -173,6 +174,8 @@ function displayRouterAnalysis(result) {
 
 // 添加事件监听器
 function addEventListeners() {
+    if (eventListenersBound) return;
+    eventListenersBound = true;
     safeExecute(() => {
         // 路径复制按钮
         const copyPathsBtn = document.getElementById("copyPathsBtn");
@@ -253,6 +256,68 @@ function addEventListeners() {
                             this.textContent = "复制所有URL";
                         }, 2000);
                     });
+            });
+        }
+
+        // 打开所有URL按钮
+        const openAllUrlsBtn = document.getElementById("openAllUrlsBtn");
+        if (openAllUrlsBtn) {
+            openAllUrlsBtn.addEventListener("click", function () {
+                const btn = this;
+                const basePathUrls = document.querySelectorAll(
+                    ".base-path-urls .url-text"
+                );
+                const standardUrls = document.querySelectorAll(
+                    ".standard-urls .url-text"
+                );
+
+                let urlsToOpen = [];
+                if (basePathUrls.length > 0) {
+                    urlsToOpen = Array.from(basePathUrls).map(
+                        (el) => el.textContent
+                    );
+                    Array.from(standardUrls).forEach((el) => {
+                        if (
+                            !Array.from(basePathUrls).some((baseEl) =>
+                                baseEl.textContent.includes(
+                                    el.textContent.split("/").pop()
+                                )
+                            )
+                        ) {
+                            urlsToOpen.push(el.textContent);
+                        }
+                    });
+                } else {
+                    urlsToOpen = Array.from(standardUrls).map(
+                        (el) => el.textContent
+                    );
+                }
+
+                if (urlsToOpen.length === 0) {
+                    btn.textContent = "无URL可打开";
+                    setTimeout(() => {
+                        btn.textContent = "打开所有URL";
+                    }, 2000);
+                    return;
+                }
+
+                btn.textContent = `正在打开 ${urlsToOpen.length} 个...`;
+                btn.disabled = true;
+
+                // 委托给background service worker执行，避免popup关闭后丢失上下文
+                chrome.runtime.sendMessage(
+                    {
+                        action: "openAllUrls",
+                        urls: urlsToOpen,
+                    },
+                    function () {
+                        btn.textContent = `已发送 ${urlsToOpen.length} 个`;
+                        btn.disabled = false;
+                        setTimeout(() => {
+                            btn.textContent = "打开所有URL";
+                        }, 3000);
+                    }
+                );
             });
         }
 
@@ -480,10 +545,12 @@ function displayUrlList(routes) {
                 <div class="copy-actions">
                     <button id="copyPathsBtn" class="secondary-btn">复制所有路径</button>
                     <button id="copyUrlsBtn" class="secondary-btn">复制所有URL</button>
+                    <button id="openAllUrlsBtn" class="secondary-btn" style="background-color:#41b883;">打开所有URL</button>
                 </div>
             `;
 
             pathListContainer.innerHTML = html;
+            eventListenersBound = false;
             setTimeout(addEventListeners, 100);
         }, "displayUrlList");
     });
