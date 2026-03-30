@@ -51,7 +51,7 @@ function openAllUrls(urls) {
                 chrome.tabs.group({ tabIds: newTabIds }, function (groupId) {
                     if (!chrome.runtime.lastError) {
                         chrome.tabGroups.update(groupId, {
-                            title: "VueCrack",
+                            title: "VueBomb",
                             color: "green",
                         });
                     }
