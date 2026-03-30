@@ -1,4 +1,4 @@
-# VueCrack
+# Vuebomb
 
 ![Vue工具](https://img.shields.io/badge/Vue-Router-41b883)
 ![版本](https://img.shields.io/badge/版本-1.3-blue)
